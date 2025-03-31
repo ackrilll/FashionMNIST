@@ -54,11 +54,11 @@ if __name__ == '__main__':
                                     transforms.Normalize((0.5),(0.5))])
 
     #데이터 셋 다운로드
-    trainset = datasets.FashionMNIST(root='C:\\Users\\skawl\\PycharmProjects\\FashionMNIST',
+    trainset = datasets.FashionMNIST(root='.\\FashionMNIST',
                                     train=True, download=True,
                                     transform=transform)
 
-    testset = datasets.FashionMNIST(root='C:\\Users\\skawl\\PycharmProjects\\FashionMNIST',
+    testset = datasets.FashionMNIST(root='.\\FashionMNIST',
                                    train=False, download=True,
                                    transform=transform)
 
@@ -117,3 +117,13 @@ if __name__ == '__main__':
                 print(' Epoch: {}, Iter: {}, Loss: {}'.format(
                     epoch + 1, i + 1, running_loss / 2000))
                 running_loss = 0.0
+
+    #모델 저장
+    PATH = '.\\fashion_mnist.pth'
+    torch.save(net.state_dict(),PATH)
+
+    #모델 로드
+    net = NeuralNet()
+    net.load_state_dict(torch.load(PATH))
+
+    print('로드된 모델: ', net.parameters)

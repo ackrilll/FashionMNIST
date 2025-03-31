@@ -7,7 +7,9 @@ from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import multiprocessing
 import os
+
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+
 #모델 정의
 class NeuralNet(nn.Module):
     def __init__(self):
@@ -40,7 +42,6 @@ print('모델: ',net)
 print('파라미터 텐서 개수: ',len(params))
 print('conv1 텐서 크기: ',params[0].size())
 
-os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 if __name__ == '__main__':
     multiprocessing.freeze_support() # 윈도우 환경에서 필요
 
@@ -96,3 +97,23 @@ if __name__ == '__main__':
         plt.imshow(image,cmap = 'gray')
 
     plt.show()
+
+    # 손실함수 및 옵티마이저 설정
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+
+    # 모델 훈련
+    for epoch in range(10):
+        running_loss = 0.0
+        for i, data in enumerate(train_loader, 0):
+            inputs, labels = data
+            optimizer.zero_grad()
+            outputs = net(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            running_loss += loss.item()
+            if i % 100 == 99:
+                print(' Epoch: {}, Iter: {}, Loss: {}'.format(
+                    epoch + 1, i + 1, running_loss / 2000))
+                running_loss = 0.0

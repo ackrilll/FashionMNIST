@@ -104,6 +104,7 @@ if __name__ == '__main__':
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
+    '''
     # 모델 훈련
     for epoch in range(10):
         running_loss = 0.0
@@ -119,13 +120,14 @@ if __name__ == '__main__':
                 print(' Epoch: {}, Iter: {}, Loss: {}'.format(
                     epoch + 1, i + 1, running_loss / 2000))
                 running_loss = 0.0
-
+    
     #모델 저장
     PATH = '.\\fashion_mnist.pth'
     torch.save(net.state_dict(),PATH)
-
+    '''
     #모델 로드
-    net = NeuralNet()
+    PATH = '.\\fashion_mnist.pth'
+    net = NeuralNet().to(device)
     net.load_state_dict(torch.load(PATH))
 
     print('로드된 모델: ', net.parameters)
@@ -141,7 +143,8 @@ if __name__ == '__main__':
 
     dataiter = iter(test_loader)
     images, label = dataiter.__next__()
-    imshow(torchvision.utils.make_grid((images[:6])))
+    images = images.to(device)  # 입력 데이터 GPU 이동
+    imshow(torchvision.utils.make_grid((images[:6].cpu())))
 
     outputs = net(images)
     _, predicted = torch.max(outputs, 1)
@@ -150,7 +153,7 @@ if __name__ == '__main__':
     figure = plt.figure(figsize=(16, 8))
     for i in range(6):
         ax = figure.add_subplot(2, 3, i + 1)
-        image = images[i].squeeze()
+        image = images[i].squeeze().cpu()
         true_label = labels_map[label[i].item()]
         pred_label = labels_map[predicted[i].item()]
         ax.imshow(image, cmap='gray')
@@ -163,7 +166,7 @@ if __name__ == '__main__':
     total = 0
     with torch.no_grad():
         for data in test_loader:
-            images, labels = data
+            images, labels = data[0].to(device), data[1].to(device)
             outputs = net(images)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)

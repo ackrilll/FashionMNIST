@@ -1,8 +1,10 @@
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
+import torchvision.utils
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import multiprocessing
@@ -127,3 +129,44 @@ if __name__ == '__main__':
     net.load_state_dict(torch.load(PATH))
 
     print('로드된 모델: ', net.parameters)
+
+
+    # 모델 테스트
+    def imshow(image):
+        image = image / 2 + 0.5
+        npimg = image.numpy()
+        fig = plt.figure(figsize=(16,8))
+        plt.imshow(np.transpose(npimg, (1, 2, 0)))
+        plt.show()
+
+    dataiter = iter(test_loader)
+    images, label = dataiter.__next__()
+    imshow(torchvision.utils.make_grid((images[:6])))
+
+    outputs = net(images)
+    _, predicted = torch.max(outputs, 1)
+
+    # 6개 이미지와 예측 결과 표시
+    figure = plt.figure(figsize=(16, 8))
+    for i in range(6):
+        ax = figure.add_subplot(2, 3, i + 1)
+        image = images[i].squeeze()
+        true_label = labels_map[label[i].item()]
+        pred_label = labels_map[predicted[i].item()]
+        ax.imshow(image, cmap='gray')
+        ax.set_title(f'True: {true_label}\nPredicted: {pred_label}')
+        ax.axis('off')
+    plt.show()
+
+    # 정확도 계산
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        for data in test_loader:
+            images, labels = data
+            outputs = net(images)
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+
+    print('정답률: %d %%' % (100 * correct / total))
